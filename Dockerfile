@@ -20,16 +20,20 @@ RUN git clone https://github.com/Tok/sd-forge-deforum /app/sd-webui/extensions/s
 #ADJUST FORGE
 WORKDIR /app/sd-webui
 
-#settings
-COPY config.json config.json
 
 
 # Set up the Python environment and install requirements
 RUN python3 -m venv venv && \
-    . venv/bin/activate && \
+    . venv/bin/activate 
+
+RUN pip install -U --extra-index-url https://download.pytorch.org/whl/cu121 --extra-index-url https://pypi.nvidia.com \
+    # `torch` (3.6G) and the underlying package `triton` (276M), `torchvision` is small but install together
+    torch==2.3.1 torchvision==0.18.1 \
+    # `xformers` (471M)
+    xformers==0.0.27 && \
     pip install -r requirements_versions.txt && \
     pip install insightface && \
-    pip install -r extensions/sd-forge-deforum/requirements.txt && \
+    pip install -r extensions/sd-forge-deforum/requirements.txt clip-anytorch && \
     deactivate
  
 RUN mkdir -p models/Stable-diffusion && \
@@ -43,9 +47,17 @@ RUN wget --header="Authorization: Bearer $HF_TOKEN" -O models/Stable-diffusion/F
     && wget --header="Authorization: Bearer $HF_TOKEN" -O models/VAE/t5xxl_fp16.safetensors https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors \
     && wget --header="Authorization: Bearer $HF_TOKEN" -O models/Deforum/dpt_large-midas-2f21e586.pt https://huggingface.co/deforum/MiDaS/resolve/main/dpt_large-midas-2f21e586.pt
 
+
+
+
+#settings
+COPY config.json config.json
+
 # Copy the entry point script
 COPY run.sh /app/run.sh
 RUN chmod +x /app/run.sh
+
+
 # Set up permissions and user
 RUN useradd -m webui && \
     chown -R webui:webui /app
