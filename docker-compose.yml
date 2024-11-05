@@ -1,8 +1,6 @@
 services:
   webui:
     build: .
-    volumes:
-      - "./data:/app/sd-webui"
     ports:
       - "7860:7860"
     environment:
