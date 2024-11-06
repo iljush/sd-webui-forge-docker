@@ -16,6 +16,7 @@ RUN git clone https://github.com/lllyasviel/stable-diffusion-webui-forge.git /ap
 RUN git clone https://github.com/Tok/sd-forge-deforum /app/sd-webui/extensions/sd-forge-deforum
 
 
+COPY requirements.txt /app/requirements.txt
 
 #ADJUST FORGE
 WORKDIR /app/sd-webui
@@ -24,9 +25,8 @@ WORKDIR /app/sd-webui
 
 # Set up the Python environment and install requirements
 RUN python3 -m venv venv && \
-    . venv/bin/activate 
-
-RUN pip install -U --extra-index-url https://download.pytorch.org/whl/cu121 --extra-index-url https://pypi.nvidia.com \
+    . venv/bin/activate && \
+    pip install -U --extra-index-url https://download.pytorch.org/whl/cu121 --extra-index-url https://pypi.nvidia.com \
     # `torch` (3.6G) and the underlying package `triton` (276M), `torchvision` is small but install together
     torch==2.3.1 torchvision==0.18.1 \
     # `xformers` (471M)
@@ -34,8 +34,9 @@ RUN pip install -U --extra-index-url https://download.pytorch.org/whl/cu121 --ex
     pip install -r requirements_versions.txt && \
     pip install insightface && \
     pip install -r extensions/sd-forge-deforum/requirements.txt clip-anytorch && \
+    pip install -r /app/requirements.txt && \
     deactivate
- 
+
 RUN mkdir -p models/Stable-diffusion && \
     mkdir -p models/Stable-diffusion/Flux && \
     mkdir -p models/VAE && \
@@ -50,6 +51,15 @@ RUN wget --header="Authorization: Bearer $HF_TOKEN" -O models/Stable-diffusion/F
 
 
 
+    # Set up permissions and user
+RUN useradd -m webui && \
+    chown -R webui:webui /app
+
+# Copy the entry point script
+COPY onto /app/onto
+RUN chmod -R +x /app/onto
+RUN chown -R webui:webui /app/onto
+
 #settings
 COPY config.json config.json
 
@@ -58,9 +68,7 @@ COPY run.sh /app/run.sh
 RUN chmod +x /app/run.sh
 
 
-# Set up permissions and user
-RUN useradd -m webui && \
-    chown -R webui:webui /app
+
 USER webui
 
 

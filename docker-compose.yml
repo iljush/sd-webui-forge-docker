@@ -4,8 +4,14 @@ services:
     ports:
       - "7860:7860"
     environment:
-      - "ARGS=--listen --enable-insecure-extension-acces"
+      - "ARGS=--listen --xformers --api --allow-code --enable-insecure-extension-access --opt-sdp-attention --opt-sdp-no-mem-attention --opt-split-attention --opt-channelslast --deforum-api"
       - "UI=forge"
+      - PROJECT_ID=${PROJECT_ID:-850b5eb8-9dbf-4ce2-add4-a5087d4d8e86}
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME:-blob.api.app.ontoworks.org}
+      - PROJECT_NAME=${PROJECT_NAME:-testProjectYolo}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+
     deploy:
       resources:
         reservations:

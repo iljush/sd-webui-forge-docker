@@ -1,0 +1,13 @@
+boto3
+botocore
+requests
+moviepy
+numexpr
+av
+pims
+gdown
+fvcore
+mediapipe
+onnxruntime
+svglib
+moviepy
